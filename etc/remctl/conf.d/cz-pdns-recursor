@@ -1,0 +1,4 @@
+# PowerDNS Recursor scripts
+#
+pdns-recursor ALL /usr/bin/cz-pdns-recursor \
+    /etc/remctl/acl/ca-zephyr-admin

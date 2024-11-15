@@ -1,0 +1,222 @@
+#!/usr/bin/perl
+#
+# cz-pdns-recursor --- Status and control of the PDNS recursor daemon
+#
+# Copyright 2024, CZ Software
+
+use AppConfig qw(:argcount :expand);
+use Carp;
+use Getopt::Long;
+use IPC::Run qw( run timeout );
+use Pod::Usage;
+use strict;
+
+my $opt_debug;
+my $opt_help;
+my $opt_manual;
+
+my $DEBUG_TIME;
+
+##############################################################################
+# Subroutines
+##############################################################################
+
+# ------------------------------------------------
+# output debugging information
+
+sub dbg {
+    if (!$opt_debug) {
+        return;
+    }
+    my ($tmp)   = @_;
+    my $now     = time();
+    my $elapsed = $now - $DEBUG_TIME;
+    print {*STDOUT} "$now ($elapsed) $tmp \n"
+      or croak("debugging print to STDOUT failed: $!");
+    $DEBUG_TIME = $now;
+    return;
+}
+
+#-------------------------------------------------------------------------
+# standard output
+
+sub msg {
+    my ($msg) = @_;
+    print {*STDOUT} "$msg\n" or croak("print to STDOUT failed: $!");
+    return;
+}
+
+# ----------------------------------------------------------------------
+# Run a shell command line
+
+sub run_cmd {
+    my ($cmd_ref, $timeout) = @_;
+
+    my @cmd = @{$cmd_ref};
+    if (!$timeout) {
+        $timeout = 60;
+    }
+
+    my $in;
+    my $out;
+    my $err;
+    my $cmd_line = 'Executing: ' . join(' ', @cmd);
+    dbg($cmd_line);
+    eval { run(\@cmd, \$in, \$out, \$err, timeout($timeout)); };
+    if ($@) {
+        if ($err) {
+            $err .= "\n";
+        }
+        $err .= "ERROR executing:$cmd_line\n";
+        $err .= $@;
+        croak "$err\n";
+    }
+    dbg("out: $out");
+    dbg("INFO: $err\n");
+    return $out;
+}
+
+##############################################################################
+# Main routine
+##############################################################################
+
+# -- get options
+GetOptions(
+    'debug'  => \$opt_debug,
+    'help'   => \$opt_help,
+    'manual' => \$opt_manual
+);
+
+# -- Flush output immediately
+local $| = 1;
+
+my $action;
+if (scalar(@ARGV) == 0) {
+    $action = 'help';
+} else {
+    $action = $ARGV[0];
+}
+
+if ($action eq 'help') {
+    $opt_help = 1;
+}
+if ($action eq 'manual') {
+    $opt_manual = 1;
+}
+
+# Display help if requested
+if ($opt_help) {
+    pod2usage(-verbose => 0);
+}
+if ($opt_manual) {
+    pod2usage(-verbose => 2);
+}
+
+my $action = shift(@ARGV);
+if (!$action) {
+    msg('ERROR: Missing action');
+    exit 1;
+}
+
+if ($action eq 'status') {
+    my @cmd = ('systemctl', 'status', 'pdns-recursor');
+    print(run_cmd(\@cmd) . "\n");
+} elsif ($action eq 'restart') {
+    my @cmd = ('systemctl', 'restart', 'pdns-recursor');
+    print(run_cmd(\@cmd) . "\n");
+} elsif ($action eq 'stop') {
+    my @cmd = ('systemctl', 'stop', 'pdns-recursor');
+    print(run_cmd(\@cmd) . "\n");
+} elsif ($action eq 'start') {
+    my @cmd = ('systemctl', 'start', 'pdns-recursor');
+    print(run_cmd(\@cmd) . "\n");
+} else {
+    msg("ERROR: action '$action' unknown");
+    exit 1;
+}
+
+exit;
+
+__END__
+
+=head1 NAME
+
+cz-pdns-recursor - Control and monitor the PDNS recursor daemon
+
+=head1 SYNOPSIS
+
+cz-pdns-recursor status|stop|start|restart|help|manual
+
+=head1 DESCRIPTION
+
+Control and monitor the PDNS recursor daemon by issuing systemctl
+commands.  This script is intended to be run using remctl.
+
+=head1 ACTIONS
+
+=over 4
+
+=item status
+
+Show the daemon status.
+
+=item stop
+
+Stop the PDNS recursor daemon.
+
+=item start
+
+Start the PDNS recursor daemon.
+
+=item restart
+
+Restart the PDNS recursor daemon.
+
+=back
+
+=head1 OPTIONS
+
+=over 4
+
+=item --help
+
+Display short help text.
+
+=item --manual
+
+Display the complete documentation.
+
+=item --debug
+
+Display debugging messages.
+
+=back
+
+=head1 AUTHOR
+
+Bill MacAllister <bill@ca-zephyr.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2024, CZ Software
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut

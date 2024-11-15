@@ -1,0 +1,5 @@
+cz-pdns-recursor (1) unstable; urgency=low
+
+  * Initial packaging of Power DNS utility scripts for recursor instances.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Fri, 15 Nov 2024 07:43:00 +0000
