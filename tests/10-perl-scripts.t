@@ -5,7 +5,7 @@
 use Test::More qw( no_plan );
 
 my @script_list = (
-    'bin/cz-pdns-recursor',
+    'bin/cz-pdns',
     );
 
 for my $this_script (@script_list) {

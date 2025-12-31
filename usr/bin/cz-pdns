@@ -17,6 +17,11 @@ my $opt_manual;
 
 my $DEBUG_TIME;
 
+my %PKG_LIST = (
+    'pdns-server'   => 'pdns',
+    'pdns-recursor' => 'pdns-recursor',
+);
+
 ##############################################################################
 # Subroutines
 ##############################################################################
@@ -118,19 +123,33 @@ if (!$action) {
     exit 1;
 }
 
-if ($action eq 'status') {
-    my @cmd = ('systemctl', 'status', 'pdns-recursor');
-    print(run_cmd(\@cmd) . "\n");
-} elsif ($action eq 'restart') {
-    my @cmd = ('systemctl', 'restart', 'pdns-recursor');
-    print(run_cmd(\@cmd) . "\n");
-} elsif ($action eq 'stop') {
-    my @cmd = ('systemctl', 'stop', 'pdns-recursor');
-    print(run_cmd(\@cmd) . "\n");
-} elsif ($action eq 'start') {
-    my @cmd = ('systemctl', 'start', 'pdns-recursor');
-    print(run_cmd(\@cmd) . "\n");
-} else {
+my $valid_action;
+for my $pkg (sort keys %PKG_LIST) {
+    system("dpkg -s $pkg >/dev/null 2>&1");
+    if ($? != 0) {
+        next;
+    }
+
+    if ($action eq 'status') {
+        $valid_action = 1;
+        my @cmd = ('systemctl', 'status', $PKG_LIST{$pkg});
+        print(run_cmd(\@cmd) . "\n");
+    } elsif ($action eq 'restart') {
+        $valid_action = 1;
+        my @cmd = ('systemctl', 'restart', $PKG_LIST{$pkg});
+        print(run_cmd(\@cmd) . "\n");
+    } elsif ($action eq 'stop') {
+        $valid_action = 1;
+        my @cmd = ('systemctl', 'stop', $PKG_LIST{$pkg});
+        print(run_cmd(\@cmd) . "\n");
+    } elsif ($action eq 'start') {
+        $valid_action = 1;
+        my @cmd = ('systemctl', 'start', $PKG_LIST{$pkg});
+        print(run_cmd(\@cmd) . "\n");
+    }
+}
+
+if (!$valid_action) {
     msg("ERROR: action '$action' unknown");
     exit 1;
 }
@@ -141,16 +160,18 @@ __END__
 
 =head1 NAME
 
-cz-pdns-recursor - Control and monitor the PDNS recursor daemon
+cz-pdns - Control and monitor the PDNS daemons
 
 =head1 SYNOPSIS
 
-cz-pdns-recursor status|stop|start|restart|help|manual
+cz-pdns status|stop|start|restart|help|manual
 
 =head1 DESCRIPTION
 
-Control and monitor the PDNS recursor daemon by issuing systemctl
-commands.  This script is intended to be run using remctl.
+Control and monitor the PDNS daemons by issuing systemctl commands.
+This script checks to see if pdns-server and pdns-recursor packages
+are installed and controls one or both daemons.  This script is
+intended to be run using remctl.
 
 =head1 ACTIONS
 
@@ -162,15 +183,15 @@ Show the daemon status.
 
 =item stop
 
-Stop the PDNS recursor daemon.
+Stop the PDNS daemon.
 
 =item start
 
-Start the PDNS recursor daemon.
+Start the PDNS daemon.
 
 =item restart
 
-Restart the PDNS recursor daemon.
+Restart the PDNS daemon.
 
 =back
 
@@ -198,7 +219,7 @@ Bill MacAllister <bill@ca-zephyr.org>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2024, CZ Software
+Copyright (C) 2024-25, CZ Software
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

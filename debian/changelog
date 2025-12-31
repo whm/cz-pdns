@@ -1,3 +1,10 @@
+cz-pdns (3) unstable; urgency=medium
+
+  * Rename the package to cz-pdns since the one script that the
+    package supplies can be run on any pdns server.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Wed, 31 Dec 2025 02:07:32 +0000
+
 cz-pdns-recursor (2) unstable; urgency=medium
 
   * Update the remctl configuration to allow pdns hosts access to the

@@ -1,4 +1,4 @@
-Source: cz-pdns-recursor
+Source: cz-pdns
 Section: admin
 Priority: optional
 Maintainer: Bill MacAllister <bill@ca-zephyr.org>
@@ -11,7 +11,7 @@ Build-Depends: debhelper (>= 12),
  perltidy
 Standards-Version: 4.0.6.1
 
-Package: cz-pdns-recursor
+Package: cz-pdns
 Architecture: all
 Depends: ${misc:Depends}, ${perl:Depends},
  libappconfig-perl,
