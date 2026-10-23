@@ -1,0 +1,3 @@
+# Search PowerDNS for a host
+#
+dns-search ALL /usr/bin/dns-search ANYUSER
