@@ -19,8 +19,15 @@ function help_em {
 
 function update_db {
     TMP_DIR="/tmp/pdns-db/"
-    GIT_DIR="/afs/cz/service/software/a_git/powerdns/.git"
+    GIT_DIR="/afs/cz/service/software/a_git/powerdns.git"
     OUT_DIR="/var/lib/powerdns/"
+    KRB_CMD="k5start -f /etc/krb5.keytab -U -- "
+
+    conf_file="/etc/cz-dns-update.conf"
+    if [ -e $conf_file ]
+    then
+        source $conf_file
+    fi
     
     if [ -e $TMP_DIR ]
     then
@@ -35,10 +42,15 @@ function update_db {
     done
 
     echo "git archive of $GIT_DIR"
-    git --git-dir=$GIT_DIR archive master | tar --directory $TMP_DIR -x
-
+    $KRB_CMD git --git-dir=$GIT_DIR archive master \
+        | tar --directory $TMP_DIR -x
+    if [ $? -ne 0 ]
+    then
+        echo "git archive command failed"
+        exit 1
+    fi
     echo "rsync to $OUT_DIR"
-    rsync --recursive --delete $TMP_DIR $OUT_DIR
+    $KRB_CMD rsync --recursive --delete $TMP_DIR $OUT_DIR
     
 }
  
@@ -102,6 +114,38 @@ Display usage information.
 =item manual
 
 Display the man page for this script.
+
+=back
+
+=head1 Configuration File
+
+The configuration file is a bash fragment that if present will be
+source'd before any commands are executed.  The valid bash variables
+are defined below.  The configuration file name is
+/etc/cz-dns-update.conf.
+
+=over 4
+
+=item TMP_DIR
+
+This is that path to the working directory that will hold the output
+of the git archive command.  Default is "/tmp/pdns-db/".
+
+=item GIT_DIR
+
+This is the directory that holds the bare git repostitory.  Default is
+"/afs/cz/service/software/a_git/powerdns.git".
+
+=item OUT_DIR
+
+Is the location of the PowerDNS zone files.  Default is
+"/var/lib/powerdns/".
+
+=item KRB_CMD
+
+Is a command that is pre-pended to the git and rsync commands.  This
+allows the repostory to be in AFS.  Default is "k5start -f
+/etc/krb5.keytab -U -- ".
 
 =back
 
