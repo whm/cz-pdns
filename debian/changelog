@@ -1,3 +1,9 @@
+cz-pdns (5) unstable; urgency=medium
+
+  * Add cz-dns-update to refresh the DNS database from a git repository.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Mon, 26 Oct 2026 02:13:13 +0000
+
 cz-pdns (4) unstable; urgency=medium
 
   * Add the dns-search script as a remctl target.

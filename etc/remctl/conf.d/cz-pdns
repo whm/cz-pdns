@@ -1,5 +1,8 @@
 # PowerDNS Recursor scripts
 #
+pdns update /usr/bin/cz-dns-update \
+    /etc/remctl/acl/ca-zephyr-admin \
+    /etc/remctl/acl/pdns-hosts
 pdns ALL /usr/bin/cz-pdns \
     /etc/remctl/acl/ca-zephyr-admin \
     /etc/remctl/acl/pdns-hosts
