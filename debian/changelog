@@ -1,3 +1,9 @@
+cz-pdns (6) unstable; urgency=medium
+
+  * Bug fix in cz-dns-update.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Wed, 28 Oct 2026 07:51:49 +0000
+
 cz-pdns (5) unstable; urgency=medium
 
   * Add cz-dns-update to refresh the DNS database from a git repository.
