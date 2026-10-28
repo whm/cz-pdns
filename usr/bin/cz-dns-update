@@ -21,7 +21,7 @@ function update_db {
     TMP_DIR="/tmp/pdns-db/"
     GIT_DIR="/afs/cz/service/software/a_git/powerdns.git"
     OUT_DIR="/var/lib/powerdns/"
-    KRB_CMD="k5start -f /etc/krb5.keytab -U -- "
+    KRB_CMD="yes"
 
     conf_file="/etc/cz-dns-update.conf"
     if [ -e $conf_file ]
@@ -41,17 +41,29 @@ function update_db {
         fi
     done
 
-    echo "git archive of $GIT_DIR"
-    $KRB_CMD git --git-dir=$GIT_DIR archive master \
-        | tar --directory $TMP_DIR -x
+    echo "git archive to $TMP_DIR"
+    if [ $KRB_CMD = "yes" ]
+    then
+        k5start -f /etc/krb5.keytab -Ut -- \
+	    git --git-dir=$GIT_DIR archive master \
+            | tar --directory $TMP_DIR -x
+    else 	    
+        git --git-dir=$GIT_DIR archive master \
+            | tar --directory $TMP_DIR -x
+    fi
     if [ $? -ne 0 ]
     then
         echo "git archive command failed"
         exit 1
     fi
     echo "rsync to $OUT_DIR"
-    $KRB_CMD rsync --recursive --delete $TMP_DIR $OUT_DIR
-    
+    if [ $KRB_CMD = "yes" ]
+    then
+        k5start -f /etc/krb5.keytab -Ut -- \
+		rsync --recursive --delete $TMP_DIR $OUT_DIR
+    else
+	rsync --recursive --delete $TMP_DIR $OUT_DIR
+    fi
 }
  
 case $1 in
