@@ -1,3 +1,10 @@
+cz-pdns (7) unstable; urgency=medium
+
+  * Move cz-dns-update to cz-pdns-primary package where it should be.
+  * Remove cz-pdns-update added by mistake.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Wed, 28 Oct 2026 08:06:23 +0000
+
 cz-pdns (6) unstable; urgency=medium
 
   * Bug fix in cz-dns-update.
